@@ -84,24 +84,6 @@ def read_drive_file(file_id: str, max_bytes: int = 200_000) -> dict[str, Any]:
 
 
 @mcp.tool
-def grade_submission(
-    course_id: str,
-    coursework_id: str,
-    submission_id: str,
-    grade: float,
-    draft: bool = False,
-) -> dict[str, Any]:
-    """Set a grade on a submission. Set draft=True to save as draft only (not visible to student)."""
-    return classroom.grade_submission(course_id, coursework_id, submission_id, grade, draft=draft)
-
-
-@mcp.tool
-def return_submission(course_id: str, coursework_id: str, submission_id: str) -> dict[str, Any]:
-    """Return a graded submission to the student (releases the assigned grade)."""
-    return classroom.return_submission(course_id, coursework_id, submission_id)
-
-
-@mcp.tool
 def compute_final_grades(course_id: str, weights: dict[str, float]) -> list[dict[str, Any]]:
     """Compute weighted final grades. weights = { coursework_id: weight }, summing to 1.0."""
     return grades.compute_final_grades(course_id, weights)

@@ -1,8 +1,10 @@
 # google-classroom-mcp
 
-An [MCP](https://modelcontextprotocol.io) server that exposes Google Classroom to LLM clients (Claude Code, Claude Desktop, Cursor, etc.) — list courses and rosters, read student submissions and their Drive attachments, grade and return work, and export weighted final grades to CSV.
+An [MCP](https://modelcontextprotocol.io) server that exposes Google Classroom to LLM clients (Claude Code, Claude Desktop, Cursor, etc.) — list courses and rosters, read student submissions and their Drive attachments, compute weighted final grades, and export to CSV.
 
-Designed for teachers / lecturers who want an AI assistant in the grading loop. Runs locally over stdio; single-user OAuth against your own Google account — no hosted backend, your data never leaves your machine.
+Designed for teachers / lecturers who want an AI assistant to **read, analyze, and report** on their Classroom data. Runs locally over stdio; single-user OAuth against your own Google account — no hosted backend, your data never leaves your machine.
+
+> **Read-only by design.** Writing grades back into Classroom is intentionally not supported — see [Why no grade-write?](#why-no-grade-write) below. Use the CSV export to bulk-enter grades, or run an [Apps Script](https://developers.google.com/apps-script/reference/classroom) bridge inside your Classroom for write access.
 
 ## Tools exposed to the LLM
 
@@ -11,10 +13,8 @@ Designed for teachers / lecturers who want an AI assistant in the grading loop. 
 | `list_courses(active_only)` | Courses you teach |
 | `list_students(course_id)` | Enrolled students |
 | `list_coursework(course_id)` | Assignments in a course |
-| `list_submissions(course_id, coursework_id)` | Student submissions + Drive attachment IDs |
+| `list_submissions(course_id, coursework_id)` | Student submissions + Drive attachment IDs + grades |
 | `read_drive_file(file_id, max_bytes)` | Text of an attached Drive file (Docs / Sheets / Slides exported automatically) |
-| `grade_submission(course_id, coursework_id, submission_id, grade, draft)` | Set a grade (draft or assigned) |
-| `return_submission(course_id, coursework_id, submission_id)` | Release the grade to the student |
 | `compute_final_grades(course_id, weights)` | Weighted final grade per student; weights sum to 1.0 |
 | `export_grades_csv(course_id, weights, output_path)` | Same, written to CSV |
 
@@ -84,21 +84,30 @@ Add the same block to `~/Library/Application Support/Claude/claude_desktop_confi
 classroom.courses.readonly
 classroom.rosters.readonly
 classroom.profile.emails
-classroom.coursework.students            (read + write — grade & return)
+classroom.coursework.students.readonly
 classroom.student-submissions.students.readonly
 drive.readonly                           (read student-submitted Drive files)
 ```
 
-If you change the scopes list, delete `secrets/token.json` to force re-consent.
+All scopes are read-only. If you change the scopes list, delete `secrets/token.json` to force re-consent.
 
 ## Example LLM prompts
 
 Once registered, try asking your assistant:
 
 - "List my active courses."
-- "Show me submissions for the *Midterm Project* in CS101 and read each student's attached doc."
-- "Grade submission `<id>` as 85 with feedback 'Good analysis but missing error handling'."
-- "Compute final grades for CS101 with midterm 30%, final 40%, homework 30%, and export to `grades.csv`."
+- "Show me submissions for *LAB07* in CPE3326 and tell me which students haven't turned in."
+- "Read the attached Doc for each turned-in submission of *Midterm Project* and summarize the approach each student took."
+- "Compute final grades for CS101 with midterm 30%, final 40%, homework 30%, and export to `~/grades.csv`."
+
+## Why no grade-write?
+
+The Google Classroom REST API restricts `studentSubmissions.patch` (grading) and `.return` (releasing) to the **Developer Console project that originally created the coursework** via API, or to an approved Classroom **Add-on**. Coursework created in the Classroom web UI — i.e. virtually all real teaching — cannot be graded by a third-party OAuth project; the API returns `403 @ProjectPermissionDenied`.
+
+This was verified end-to-end during the initial smoke test, so this server deliberately ships **read + analyze + export only**. To actually post grades back to Classroom you have two practical paths:
+
+1. **Bulk-enter from CSV.** Use `export_grades_csv` to compute totals, then copy/paste the column into Classroom's gradebook view.
+2. **Apps Script bridge.** Apps Script runs as the teacher and is not subject to the project-permission restriction. A small script bound to a Google Sheet can read your exported grades and write them into Classroom via `Classroom.Courses.CourseWork.StudentSubmissions.patch`. (PRs adding a ready-made script welcome.)
 
 ## Project layout
 

@@ -1,11 +1,11 @@
 [project]
 name = "google-classroom-mcp"
 version = "0.1.0"
-description = "MCP server exposing Google Classroom (courses, rosters, coursework, submissions, grading) to LLM clients like Claude Code"
+description = "MCP server exposing Google Classroom (courses, rosters, coursework, submissions) to LLM clients like Claude Code — read, analyze, and export"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
-keywords = ["mcp", "google-classroom", "claude", "education", "grading"]
+keywords = ["mcp", "google-classroom", "claude", "education"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Education",
