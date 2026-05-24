@@ -12,5 +12,10 @@ build/
 secrets/credentials.json
 secrets/token.json
 
-# Local grade exports
+# Local grade exports + per-cohort grading artifacts (contain student PII)
 exports/
+CPE3326_*.xlsx
+*.xlsx
+
+# Per-cohort config + raw reference material (contain student PII / restricted content)
+data/

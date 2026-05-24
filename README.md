@@ -115,17 +115,49 @@ This was verified end-to-end during the initial smoke test, so this server delib
 google-classroom-mcp-project/
 ├── pyproject.toml
 ├── src/google_classroom_mcp/
-│   ├── auth.py          # OAuth desktop flow + token refresh
-│   ├── classroom.py     # Classroom API wrapper + pagination
-│   ├── drive.py         # Drive file reader (auto-exports Google-native docs)
-│   ├── grades.py        # Weighted final grade calculator + CSV export
-│   └── server.py        # MCP server — registers the tools above
+│   ├── auth.py                  # OAuth desktop flow + token refresh
+│   ├── classroom.py             # Classroom API wrapper + pagination
+│   ├── drive.py                 # Drive file reader (auto-exports Google-native docs)
+│   ├── grades.py                # Weighted final grade calculator + CSV export
+│   └── server.py                # MCP server — registers the tools above
 ├── scripts/
-│   └── smoke.py         # end-to-end OAuth + read smoke test
-├── secrets/             # gitignored — credentials.json, token.json
-├── LICENSE              # MIT
+│   ├── smoke.py                 # end-to-end OAuth + read smoke test
+│   ├── build_final_grading.py   # build a grading xlsx from a cohort config
+│   ├── example_cohort.py        # template showing the cohort config schema
+│   ├── inspect_pkt.py           # decrypt + summarize Cisco Packet Tracer .pkt/.pkz/.pka
+│   └── lib/Decipher/            # vendored Unpacket pure-Python PKT decryptor
+├── data/                        # gitignored — your cohort configs (real student data)
+├── secrets/                     # gitignored — credentials.json, token.json
+├── LICENSE                      # MIT
 └── README.md
 ```
+
+## Optional companion scripts
+
+### `build_final_grading.py` — per-cohort grading workbook
+
+```bash
+# 1. Copy the schema template into data/ (data/ is gitignored)
+cp scripts/example_cohort.py data/my_cohort.py
+
+# 2. Edit data/my_cohort.py with your real STUDENTS / QUALITY_ADJUST / REVIEW_POINTS
+
+# 3. Build the xlsx
+uv run python scripts/build_final_grading.py data/my_cohort.py
+```
+
+Produces an .xlsx with a Summary section, Grade distribution, Per-lab detail grid (colour-coded by status / late / quality-adjustment), and a Quality Review notes section. Defaults are CPE3326-specific (17 labs, weights totalling 100, late-window cutoff at LAB6) — edit `LAB_WEIGHTS` and the late branch in `score()` for other courses.
+
+**Never commit `data/`** — it contains student PII (names, IDs, emails, grading notes).
+
+### `inspect_pkt.py` — Cisco Packet Tracer file inspector
+
+```bash
+uv run python scripts/inspect_pkt.py path/to/file.pkt           # topology summary
+uv run python scripts/inspect_pkt.py path/to/file.pkt --config  # full IOS running-config per device
+```
+
+Decrypts `.pkt`, `.pkz` (zip-wrapped), and `.pka` (activity) files using a vendored copy of [Unpacket](https://github.com/Punkcake21/Unpacket) (pure-Python, MIT). Useful for grading student network submissions without opening every file in Packet Tracer manually. Requires `lxml` (pulled in as a dependency).
 
 ## Security notes
 
