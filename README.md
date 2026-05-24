@@ -47,13 +47,15 @@ cd google-classroom-mcp-project
 uv sync       # or: pip install -e .
 ```
 
-### 3. First-run OAuth consent
+### 3. First-run OAuth + verify
 
 ```bash
-uv run google-classroom-mcp
+uv run python scripts/smoke.py
 ```
 
-The first run opens your browser asking you to grant the requested scopes. After consenting, `secrets/token.json` is written and subsequent runs use the refresh token silently. Press Ctrl-C to exit — the server is now ready to be launched by your MCP client.
+This triggers the OAuth flow (browser opens asking you to grant the requested scopes), then lists your active courses, the roster of the first course, and its coursework — proving that auth, pagination, and Classroom connectivity all work. After consenting, `secrets/token.json` is written and subsequent runs use the refresh token silently.
+
+If you see a `403 access_denied` page, you forgot to add yourself under **Test users** in step 1.3. Add your Google account and retry.
 
 ### 4. Register the server with your MCP client
 
@@ -109,6 +111,8 @@ google-classroom-mcp-project/
 │   ├── drive.py         # Drive file reader (auto-exports Google-native docs)
 │   ├── grades.py        # Weighted final grade calculator + CSV export
 │   └── server.py        # MCP server — registers the tools above
+├── scripts/
+│   └── smoke.py         # end-to-end OAuth + read smoke test
 ├── secrets/             # gitignored — credentials.json, token.json
 ├── LICENSE              # MIT
 └── README.md
