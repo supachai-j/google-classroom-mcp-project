@@ -1,0 +1,34 @@
+[project]
+name = "google-classroom-mcp"
+version = "0.1.0"
+description = "MCP server exposing Google Classroom (courses, rosters, coursework, submissions, grading) to LLM clients like Claude Code"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+keywords = ["mcp", "google-classroom", "claude", "education", "grading"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education",
+]
+dependencies = [
+    "fastmcp>=2.0",
+    "google-api-python-client>=2.120",
+    "google-auth>=2.27",
+    "google-auth-oauthlib>=1.2",
+    "google-auth-httplib2>=0.2",
+]
+
+[project.scripts]
+google-classroom-mcp = "google_classroom_mcp.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/google_classroom_mcp"]

@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+*.egg-info/
+dist/
+build/
+.ruff_cache/
+.pytest_cache/
+
+# OAuth client + refresh token — NEVER commit
+secrets/credentials.json
+secrets/token.json
+
+# Local grade exports
+exports/
